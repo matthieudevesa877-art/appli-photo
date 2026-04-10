@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Vinted Photo">
+<title>Vinted Photo</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&display=swap');
+:root{--teal:#09B1BA;--teal-light:#e6f8f9;--teal-dark:#077a81;--bg:#f7f7f5;--white:#fff;--text:#1a1a1a;--muted:#888;--border:#e8e8e5;--r:16px;--rs:10px}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:60px}
+header{background:var(--white);border-bottom:1px solid var(--border);padding:14px 20px;position:sticky;top:0;z-index:100;display:flex;align-items:center;gap:10px}
+.dot{width:10px;height:10px;border-radius:50%;background:var(--teal);flex-shrink:0}
+header h1{font-size:17px;font-weight:600;color:var(--teal)}
+header p{font-size:12px;color:var(--muted);margin-left:auto}
+.content{padding:20px;max-width:560px;margin:0 auto}
+.section-label{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:12px}
+.nav{display:flex;background:var(--white);border:1px solid var(--border);border-radius:var(--r);padding:4px;gap:4px;margin-bottom:20px}
+.nav-btn{flex:1;padding:9px;border:none;border-radius:12px;font-size:13px;font-weight:500;cursor:pointer;background:none;color:var(--muted);font-family:inherit;transition:all .15s}
+.nav-btn.active{background:var(--teal);color:#fff}
+.page{display:none}.page.active{display:block}
+.upload-zone{border:2px dashed var(--border);border-radius:var(--r);padding:32px 20px;text-align:center;cursor:pointer;transition:all .2s;background:var(--white);margin-bottom:20px;position:relative}
+.upload-zone:hover,.upload-zone.drag{border-color:var(--teal);background:var(--teal-light)}
+.upload-zone input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.upload-icon{width:48px;height:48px;background:var(--teal-light);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 12px}
+.upload-icon svg{width:22px;height:22px;stroke:var(--teal)}
+.upload-zone h2{font-size:15px;font-weight:600;margin-bottom:5px}
+.upload-zone p{font-size:13px;color:var(--muted)}
+.bg-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:20px}
+.bg-opt{aspect-ratio:1;border-radius:var(--rs);cursor:pointer;border:2.5px solid transparent;transition:all .15s;position:relative;overflow:hidden}
+.bg-opt.sel{border-color:var(--teal)}
+.bg-opt.sel::after{content:"2713";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:#fff;background:rgba(9,177,186,.4)}
+.bg-ccolor{background:conic-gradient(red,yellow,lime,cyan,blue,magenta,red);position:relative}
+.bg-ccolor input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.bg-cphoto{background:linear-gradient(135deg,#f0f0ee 50%,#d0d0cc 50%);border:2px dashed #ccc;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;position:relative}
+.bg-cphoto input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.bg-cphoto svg{width:16px;height:16px;stroke:#aaa}
+.bg-cphoto span{font-size:9px;color:#aaa;font-weight:600;text-align:center;line-height:1.3}
+.preview-wrap{background:var(--white);border-radius:var(--r);border:1px solid var(--border);overflow:hidden;margin-bottom:16px}
+.preview-header{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.preview-header span{font-size:13px;font-weight:600}
+.ptabs{display:flex;gap:6px}
+.ptab{padding:4px 12px;border-radius:20px;font-size:12px;font-weight:500;border:1px solid var(--border);background:none;cursor:pointer;color:var(--muted);font-family:inherit}
+.ptab.active{background:var(--teal);color:#fff;border-color:var(--teal)}
+.cwrap{position:relative;min-height:240px;display:flex;align-items:center;justify-content:center;background:#f0f0ee}
+canvas{max-width:100%;display:block}
+.ov{position:absolute;inset:0;background:rgba(255,255,255,.92);display:none;align-items:center;justify-content:center;flex-direction:column;gap:12px}
+.ov.show{display:flex}
+.spinner{width:36px;height:36px;border:3px solid var(--teal-light);border-top-color:var(--teal);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.ov p{font-size:13px;color:var(--muted);font-weight:500}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px}
+.btn{padding:12px;border-radius:var(--rs);font-size:14px;font-weight:600;cursor:pointer;border:none;transition:opacity .15s;font-family:inherit}
+.btn:active{opacity:.8}
+.btn-primary{background:var(--teal);color:#fff}
+.btn-secondary{background:var(--white);color:var(--text);border:1px solid var(--border)}
+.btn-dark{background:#1a1a1a;color:#fff}
+.btn-full{grid-column:span 2}
+.prog-wrap{background:var(--white);border-radius:var(--rs);border:1px solid var(--border);padding:14px 16px;margin-bottom:16px}
+.prog-label{display:flex;justify-content:space-between;font-size:13px;margin-bottom:8px}
+.prog-label span:first-child{font-weight:500}
+.prog-label span:last-child{color:var(--muted)}
+.prog-bar{height:6px;background:#f0f0ee;border-radius:3px;overflow:hidden}
+.prog-fill{height:100%;background:var(--teal);border-radius:3px;transition:width .3s}
+.multi-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px}
+.mi{background:var(--white);border-radius:var(--rs);border:1px solid var(--border);overflow:hidden}
+.mi canvas{width:100%;display:block}
+.mi-foot{padding:8px 10px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.mi-name{font-size:11px;color:var(--muted);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:90px}
+.mi-st{font-size:10px;padding:2px 7px;border-radius:20px;font-weight:600}
+.mi-st.done{background:#e6f9f0;color:#0a7c4e}
+.mi-st.proc{background:#fff8e6;color:#b07d00}
+.mi-dl{background:none;border:none;cursor:pointer;font-size:11px;color:var(--teal);font-weight:600;font-family:inherit}
+.tips{background:var(--teal-light);border-radius:var(--r);padding:16px;margin-top:4px}
+.tips h3{font-size:13px;font-weight:600;color:var(--teal-dark);margin-bottom:10px}
+.tip{display:flex;gap:10px;margin-bottom:7px;align-items:flex-start}
+.tip:last-child{margin-bottom:0}
+.tdot{width:6px;height:6px;border-radius:50%;background:var(--teal);flex-shrink:0;margin-top:5px}
+.tip p{font-size:12px;color:var(--teal-dark);line-height:1.5}
+.empty-msg{text-align:center;padding:40px 20px;color:#bbb;font-size:14px;line-height:1.8}
+</style>
+</head>
+<body>
+<header>
+  <div class="dot"></div>
+  <h1>Vinted Photo</h1>
+  <p>Fond parfait en 1 clic</p>
+</header>
+<div class="content">
+  <nav class="nav">
+    <button class="nav-btn active" onclick="showPage('single',this)">1 photo</button>
+    <button class="nav-btn" onclick="showPage('multi',this)">Plusieurs photos</button>
+  </nav>
+
+  <!-- SINGLE -->
+  <div id="page-single" class="page active">
+    <div class="upload-zone" id="uzS">
+      <input type="file" id="fiS" accept="image/*">
+      <div class="upload-icon"><svg fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/></svg></div>
+      <h2>Importer une photo</h2>
+      <p>Appuyez ici ou glissez votre photo</p>
+    </div>
+    <div class="section-label">Choisir le fond</div>
+    <div class="bg-grid" id="bgS">
+      <div class="bg-opt sel" style="background:#fff;border:2px solid #eee" onclick="selBg(this,'#fff','S')"></div>
+      <div class="bg-opt" style="background:#f5f2ed" onclick="selBg(this,'#f5f2ed','S')"></div>
+      <div class="bg-opt" style="background:#d9d9d9" onclick="selBg(this,'#d9d9d9','S')"></div>
+      <div class="bg-opt" style="background:#555" onclick="selBg(this,'#555','S')"></div>
+      <div class="bg-opt" style="background:#111" onclick="selBg(this,'#111','S')"></div>
+      <div class="bg-opt" style="background:#e8dcc8" onclick="selBg(this,'#e8dcc8','S')"></div>
+      <div class="bg-opt" style="background:#f0d4cc" onclick="selBg(this,'#f0d4cc','S')"></div>
+      <div class="bg-opt" style="background:#c8d8c0" onclick="selBg(this,'#c8d8c0','S')"></div>
+      <div class="bg-opt" style="background:#c8dff0" onclick="selBg(this,'#c8dff0','S')"></div>
+      <div class="bg-opt" style="background:#d8d0f0" onclick="selBg(this,'#d8d0f0','S')"></div>
+      <div class="bg-opt bg-ccolor" onclick="document.getElementById('ccS').click()"><input type="color" id="ccS" value="#ff6b6b" onchange="onCColor(this,'S')" onclick="event.stopPropagation()"></div>
+      <div class="bg-opt bg-cphoto" id="cpS" onclick="document.getElementById('cpfS').click()">
+        <input type="file" id="cpfS" accept="image/*" onchange="onCPhoto(this,'S')" onclick="event.stopPropagation()">
+        <svg fill="none" viewBox="0 0 24 24" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+        <span>Ma photo</span>
+      </div>
+    </div>
+    <div class="preview-wrap" id="pvS" style="display:none">
+      <div class="preview-header">
+        <span>Apercu</span>
+        <div class="ptabs">
+          <button class="ptab active" onclick="swTab('result','S',this)">Resultat</button>
+          <button class="ptab" onclick="swTab('original','S',this)">Original</button>
+        </div>
+      </div>
+      <div class="cwrap" id="cwS"><canvas id="cvS"></canvas><div class="ov" id="ovS"><div class="spinner"></div><p id="ovMsgS">Traitement...</p></div></div>
+    </div>
+    <div class="actions" id="acS" style="display:none">
+      <button class="btn btn-secondary" onclick="resetS()">Nouvelle photo</button>
+      <button class="btn btn-primary" onclick="renderS()">Appliquer</button>
+      <button class="btn btn-dark btn-full" onclick="dlS()">Telecharger la photo</button>
+    </div>
+    <div class="tips">
+      <h3>Conseils photo Vinted</h3>
+      <div class="tip"><div class="tdot"></div><p>Fond blanc ou clair = +40% de vues sur vos annonces</p></div>
+      <div class="tip"><div class="tdot"></div><p>Photographiez a plat ou sur cintre, lumiere naturelle de preference</p></div>
+      <div class="tip"><div class="tdot"></div><p>Prenez toujours une photo des defauts pour eviter les litiges</p></div>
+      <div class="tip"><div class="tdot"></div><p>Minimum 3 photos par annonce : face, dos, detail etiquette</p></div>
+    </div>
+  </div>
+
+  <!-- MULTI -->
+  <div id="page-multi" class="page">
+    <div class="upload-zone" id="uzM">
+      <input type="file" id="fiM" accept="image/*" multiple>
+      <div class="upload-icon"><svg fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/></svg></div>
+      <h2>Importer plusieurs photos</h2>
+      <p>Selectionnez toutes vos photos d un coup</p>
+    </div>
+    <div class="section-label">Fond applique a toutes les photos</div>
+    <div class="bg-grid" id="bgM">
+      <div class="bg-opt sel" style="background:#fff;border:2px solid #eee" onclick="selBg(this,'#fff','M')"></div>
+      <div class="bg-opt" style="background:#f5f2ed" onclick="selBg(this,'#f5f2ed','M')"></div>
+      <div class="bg-opt" style="background:#d9d9d9" onclick="selBg(this,'#d9d9d9','M')"></div>
+      <div class="bg-opt" style="background:#555" onclick="selBg(this,'#555','M')"></div>
+      <div class="bg-opt" style="background:#111" onclick="selBg(this,'#111','M')"></div>
+      <div class="bg-opt" style="background:#e8dcc8" onclick="selBg(this,'#e8dcc8','M')"></div>
+      <div class="bg-opt" style="background:#f0d4cc" onclick="selBg(this,'#f0d4cc','M')"></div>
+      <div class="bg-opt" style="background:#c8d8c0" onclick="selBg(this,'#c8d8c0','M')"></div>
+      <div class="bg-opt" style="background:#c8dff0" onclick="selBg(this,'#c8dff0','M')"></div>
+      <div class="bg-opt" style="background:#d8d0f0" onclick="selBg(this,'#d8d0f0','M')"></div>
+      <div class="bg-opt bg-ccolor" onclick="document.getElementById('ccM').click()"><input type="color" id="ccM" value="#ff6b6b" onchange="onCColor(this,'M')" onclick="event.stopPropagation()"></div>
+      <div class="bg-opt bg-cphoto" id="cpM" onclick="document.getElementById('cpfM').click()">
+        <input type="file" id="cpfM" accept="image/*" onchange="onCPhoto(this,'M')" onclick="event.stopPropagation()">
+        <svg fill="none" viewBox="0 0 24 24" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+        <span>Ma photo</span>
+      </div>
+    </div>
+    <div id="progWrap" style="display:none">
+      <div class="prog-wrap">
+        <div class="prog-label"><span id="progLbl">Traitement en cours...</span><span id="progCnt">0 / 0</span></div>
+        <div class="prog-bar"><div class="prog-fill" id="progFill" style="width:0%"></div></div>
+      </div>
+    </div>
+    <div id="multiResWrap" style="display:none">
+      <button class="btn btn-dark" style="width:100%;margin-bottom:14px" onclick="dlAll()">Telecharger toutes les photos</button>
+      <div class="multi-grid" id="mGrid"></div>
+    </div>
+    <div id="multiEmpty" class="empty-msg">Importez plusieurs photos pour les traiter toutes avec le meme fond en une seule fois.</div>
+  </div>
+</div>
+
+<script>
+var ST={S:{bgColor:'#ffffff',bgImg:null,useBgImg:false,origImg:null,procData:null,tab:'result'},M:{bgColor:'#ffffff',bgImg:null,useBgImg:false,results:[]}};
+
+function showPage(id,btn){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));document.getElementById('page-'+id).classList.add('active');btn.classList.add('active')}
+
+function selBg(el,color,mode){document.querySelectorAll('#bg'+mode+' .bg-opt').forEach(o=>o.classList.remove('sel'));el.classList.add('sel');ST[mode].bgColor=color;ST[mode].useBgImg=false;ST[mode].bgImg=null;if(mode==='S'&&ST.S.procData)renderS()}
+
+function onCColor(inp,mode){var el=inp.parentElement;el.style.background=inp.value;ST[mode].bgColor=inp.value;ST[mode].useBgImg=false;document.querySelectorAll('#bg'+mode+' .bg-opt').forEach(o=>o.classList.remove('sel'));el.classList.add('sel');if(mode==='S'&&ST.S.procData)renderS()}
+
+function onCPhoto(inp,mode){var file=inp.files[0];if(!file)return;var reader=new FileReader();reader.onload=function(e){var img=new Image();img.onload=function(){ST[mode].bgImg=img;ST[mode].useBgImg=true;var el=inp.parentElement;el.style.backgroundImage='url('+e.target.result+')';el.style.backgroundSize='cover';el.style.backgroundPosition='center';el.querySelector('span').textContent='Photo OK';document.querySelectorAll('#bg'+mode+' .bg-opt').forEach(o=>o.classList.remove('sel'));el.classList.add('sel');if(mode==='S'&&ST.S.procData)renderS()};img.src=e.target.result};reader.readAsDataURL(file)}
+
+// SINGLE
+document.getElementById('fiS').addEventListener('change',function(e){if(e.target.files[0])loadS(e.target.files[0])});
+var uzS=document.getElementById('uzS');
+uzS.addEventListener('dragover',function(e){e.preventDefault();uzS.classList.add('drag')});
+uzS.addEventListener('dragleave',function(){uzS.classList.remove('drag')});
+uzS.addEventListener('drop',function(e){e.preventDefault();uzS.classList.remove('drag');var f=Array.from(e.dataTransfer.files).find(f=>f.type.startsWith('image/'));if(f)loadS(f)});
+
+function loadS(file){var reader=new FileReader();reader.onload=function(e){var img=new Image();img.onload=function(){ST.S.origImg=img;ST.S.procData=null;document.getElementById('pvS').style.display='block';document.getElementById('acS').style.display='grid';showOv('S','Suppression du fond...');setTimeout(function(){procImg(img,function(data){ST.S.procData=data;hideOv('S');renderS()})},80)};img.src=e.target.result};reader.readAsDataURL(file)}
+
+function renderS(){var s=ST.S;if(!s.procData)return;var cv=document.getElementById('cvS');var wrap=document.getElementById('cwS');var w=s.origImg.width,h=s.origImg.height;var maxW=wrap.clientWidth||460;var sc=Math.min(1,maxW/w);cv.width=Math.round(w*sc);cv.height=Math.round(h*sc);var ctx=cv.getContext('2d');if(s.tab==='original'){ctx.drawImage(s.origImg,0,0,cv.width,cv.height);return}drawBgCtx(ctx,cv.width,cv.height,s);ctx.drawImage(mkTmp(s.procData,w,h),0,0,cv.width,cv.height)}
+
+function swTab(tab,mode,btn){if(mode==='S'){ST.S.tab=tab;document.querySelectorAll('#pvS .ptab').forEach(t=>t.classList.remove('active'));btn.classList.add('active');renderS()}}
+
+function dlS(){var s=ST.S;if(!s.procData)return;var w=s.origImg.width,h=s.origImg.height;var cv=document.createElement('canvas');cv.width=w;cv.height=h;var ctx=cv.getContext('2d');drawBgCtx(ctx,w,h,s);ctx.drawImage(mkTmp(s.procData,w,h),0,0);dlCanvas(cv,'vinted-photo')}
+
+function resetS(){ST.S.origImg=null;ST.S.procData=null;document.getElementById('pvS').style.display='none';document.getElementById('acS').style.display='none';document.getElementById('fiS').value=''}
+
+function showOv(mode,msg){document.getElementById('ovMsg'+mode).textContent=msg;document.getElementById('ov'+mode).classList.add('show')}
+function hideOv(mode){document.getElementById('ov'+mode).classList.remove('show')}
+
+// MULTI
+document.getElementById('fiM').addEventListener('change',function(e){var files=Array.from(e.target.files);if(files.length)startMulti(files)});
+var uzM=document.getElementById('uzM');
+uzM.addEventListener('dragover',function(e){e.preventDefault();uzM.classList.add('drag')});
+uzM.addEventListener('dragleave',function(){uzM.classList.remove('drag')});
+uzM.addEventListener('drop',function(e){e.preventDefault();uzM.classList.remove('drag');var files=Array.from(e.dataTransfer.files).filter(f=>f.type.startsWith('image/'));if(files.length)startMulti(files)});
+
+async function startMulti(files){ST.M.results=new Array(files.length).fill(null);document.getElementById('multiEmpty').style.display='none';document.getElementById('progWrap').style.display='block';document.getElementById('multiResWrap').style.display='block';var grid=document.getElementById('mGrid');grid.innerHTML=files.map(function(f,i){return'<div class="mi" id="mi'+i+'"><div style="min-height:90px;background:#f0f0ee;display:flex;align-items:center;justify-content:center"><div class="spinner"></div></div><div class="mi-foot"><span class="mi-name">'+f.name.substring(0,18)+'</span><span class="mi-st proc" id="mist'+i+'">Traitement</span></div></div>'}).join('');updProg(0,files.length);for(var i=0;i<files.length;i++){await procFileM(files[i],i);updProg(i+1,files.length)}document.getElementById('progLbl').textContent='Termine !'}
+
+function procFileM(file,idx){return new Promise(function(resolve){var reader=new FileReader();reader.onload=function(e){var img=new Image();img.onload=function(){procImg(img,function(data){ST.M.results[idx]={img:img,procData:data,name:file.name};renderMItem(idx);resolve()})};img.src=e.target.result};reader.readAsDataURL(file)})}
+
+function renderMItem(idx){var r=ST.M.results[idx];if(!r)return;var s=ST.M;var w=r.img.width,h=r.img.height;var maxW=200;var sc=Math.min(1,maxW/w);var cv=document.createElement('canvas');cv.width=Math.round(w*sc);cv.height=Math.round(h*sc);var ctx=cv.getContext('2d');drawBgCtx(ctx,cv.width,cv.height,s);ctx.drawImage(mkTmp(r.procData,w,h),0,0,cv.width,cv.height);var item=document.getElementById('mi'+idx);item.querySelector('div').replaceWith(cv);document.getElementById('mist'+idx).textContent='Pret';document.getElementById('mist'+idx).className='mi-st done';var foot=item.querySelector('.mi-foot');if(!foot.querySelector('.mi-dl')){var btn=document.createElement('button');btn.className='mi-dl';btn.textContent='Telecharger';btn.onclick=function(){dlMItem(idx)};foot.appendChild(btn)}}
+
+function dlMItem(idx){var r=ST.M.results[idx];var s=ST.M;var w=r.img.width,h=r.img.height;var cv=document.createElement('canvas');cv.width=w;cv.height=h;var ctx=cv.getContext('2d');drawBgCtx(ctx,w,h,s);ctx.drawImage(mkTmp(r.procData,w,h),0,0);dlCanvas(cv,'vinted-'+r.name.replace(/\.[^.]+$/,''))}
+
+async function dlAll(){for(var i=0;i<ST.M.results.length;i++){if(ST.M.results[i]){dlMItem(i);await new Promise(r=>setTimeout(r,400))}}}
+
+function updProg(done,total){document.getElementById('progCnt').textContent=done+' / '+total;document.getElementById('progFill').style.width=(done/total*100)+'%';if(done<total)document.getElementById('progLbl').textContent='Traitement en cours...'}
+
+// CORE BG REMOVAL
+function procImg(img,cb){var w=img.width,h=img.height;var tmp=document.createElement('canvas');tmp.width=w;tmp.height=h;var ctx=tmp.getContext('2d');ctx.drawImage(img,0,0);var imgData=ctx.getImageData(0,0,w,h);var data=imgData.data;var samples=[];var steps=20;for(var i=0;i<=steps;i++){var t=Math.floor(i/steps*(w-1));samples.push([t,0],[t,h-1]);var s=Math.floor(i/steps*(h-1));samples.push([0,s],[w-1,s])}var rS=0,gS=0,bS=0,n=0;samples.forEach(function(p){var idx=(p[1]*w+p[0])*4;rS+=data[idx];gS+=data[idx+1];bS+=data[idx+2];n++});var bgR=rS/n,bgG=gS/n,bgB=bS/n;var tol=65;function dist(i){var dr=data[i]-bgR,dg=data[i+1]-bgG,db=data[i+2]-bgB;return Math.sqrt(dr*dr+dg*dg+db*db)}var mask=new Uint8Array(w*h);var visited=new Uint8Array(w*h);var queue=[];for(var x=0;x<w;x++){queue.push(x,0);queue.push(x,h-1)}for(var y=1;y<h-1;y++){queue.push(0,y);queue.push(w-1,y)}var qi=0;while(qi<queue.length){var qx=queue[qi++],qy=queue[qi++];if(qx<0||qx>=w||qy<0||qy>=h)continue;var idx=qy*w+qx;if(visited[idx])continue;visited[idx]=1;if(dist(idx*4)<tol){mask[idx]=1;queue.push(qx+1,qy,qx-1,qy,qx,qy+1,qx,qy-1)}}var soft=new Float32Array(w*h);var r=3;for(var sy=0;sy<h;sy++)for(var sx=0;sx<w;sx++){var sm=0,sc=0;for(var dy=-r;dy<=r;dy++)for(var dx=-r;dx<=r;dx++){var nx=sx+dx,ny=sy+dy;if(nx>=0&&nx<w&&ny>=0&&ny<h){sm+=mask[ny*w+nx];sc++}}soft[sy*w+sx]=sm/sc}var res=ctx.createImageData(w,h);for(var pi=0;pi<w*h;pi++){res.data[pi*4]=data[pi*4];res.data[pi*4+1]=data[pi*4+1];res.data[pi*4+2]=data[pi*4+2];res.data[pi*4+3]=Math.round((1-soft[pi])*255)}cb(res)}
+
+function drawBgCtx(ctx,w,h,s){if(s.useBgImg&&s.bgImg){ctx.drawImage(s.bgImg,0,0,w,h)}else{ctx.fillStyle=s.bgColor;ctx.fillRect(0,0,w,h)}}
+
+function mkTmp(data,w,h){var c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d').putImageData(data,0,0);return c}
+
+function dlCanvas(cv,name){cv.toBlob(function(blob){var a=document.createElement('a');a.download=name+'.jpg';a.href=URL.createObjectURL(blob);a.click();setTimeout(function(){URL.revokeObjectURL(a.href)},1000)},'image/jpeg',0.95)}
+</script>
+</body>
+</html>
